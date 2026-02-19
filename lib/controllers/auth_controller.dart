@@ -9,6 +9,7 @@ import '../services/auth_session_service.dart';
 import '../services/database_service.dart';
 import '../services/sync_queue_service.dart';
 import 'import_controller.dart';
+import 'user_controller.dart';
 import 'dart:async';
 
 class AuthController extends GetxController {
@@ -84,6 +85,10 @@ class AuthController extends GetxController {
 
       if (userId != 0) {
         _currentUser.value = newUser;
+        if (Get.isRegistered<UserController>()) {
+          await Get.find<UserController>()
+              .fetchAllUsers(restaurantId: newUser.restaurantId);
+        }
         await SyncQueueService.instance.enqueueUserUpsert(newUser);
         return true;
       }
@@ -106,6 +111,11 @@ class AuthController extends GetxController {
       );
       if (onlineUser != null) {
         _currentUser.value = onlineUser;
+        // refresh user list for current role scope
+        if (Get.isRegistered<UserController>()) {
+          await Get.find<UserController>()
+              .fetchAllUsers(restaurantId: onlineUser.restaurantId);
+        }
         return true;
       }
       final localUser = await _loginLocal(
@@ -113,6 +123,10 @@ class AuthController extends GetxController {
         password: password,
       );
       _currentUser.value = localUser;
+      if (Get.isRegistered<UserController>()) {
+        await Get.find<UserController>()
+            .fetchAllUsers(restaurantId: localUser.restaurantId);
+      }
       return true;
     } catch (e) {
       print('Login error: $e');
@@ -324,6 +338,9 @@ class AuthController extends GetxController {
     ApiOrderPullService.instance.updateAuthToken('');
     await AuthSessionService.instance.clearSession();
     _currentUser.value = null;
+    if (Get.isRegistered<UserController>()) {
+      await Get.find<UserController>().fetchAllUsers(restaurantId: null);
+    }
   }
 
   // Check if user is logged in

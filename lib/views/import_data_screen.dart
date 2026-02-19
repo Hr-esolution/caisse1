@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/import_controller.dart';
-import '../data/glass_theme.dart';
-import '../theme/app_theme.dart';
+import '../theme/sushi_design.dart';
 import '../widgets/admin_shell.dart';
-import '../widgets/glass_card.dart';
 
 class ImportDataScreen extends StatelessWidget {
   const ImportDataScreen({super.key});
@@ -17,52 +15,50 @@ class ImportDataScreen extends StatelessWidget {
       title: 'Importer',
       activeRoute: '/import-data',
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.lg),
+        padding: const EdgeInsets.all(SushiSpace.lg),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('Synchroniser les données', style: GlassTypography.headline1),
-            const SizedBox(height: AppSpacing.sm),
+            const Text('Synchroniser les données', style: SushiTypo.h1),
+            const SizedBox(height: SushiSpace.sm),
             Text(
               'Importez vos restaurants, produits, catégories, utilisateurs et tables en une seule action.',
-              style: GlassTypography.bodySmall,
+              style: SushiTypo.bodyMd,
             ),
-            const SizedBox(height: AppSpacing.lg),
-            GlassCard(
-              padding: const EdgeInsets.all(AppSpacing.lg),
+            const SizedBox(height: SushiSpace.lg),
+            Container(
+              decoration: SushiDeco.card(),
+              padding: const EdgeInsets.all(SushiSpace.xl),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        'Progression',
-                        style: GlassTypography.headline2,
-                      ),
+                      const Text('Progression', style: SushiTypo.h2),
                       Obx(
                         () => Text(
                           '${(importController.importProgress * 100).round()}%',
-                          style: GlassTypography.label.copyWith(
-                            color: GlassColors.redAccent,
+                          style: SushiTypo.caption.copyWith(
+                            color: SushiColors.red,
                           ),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: AppSpacing.sm),
+                  const SizedBox(height: SushiSpace.sm),
                   ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(SushiRadius.lg),
                     child: Obx(
                       () => LinearProgressIndicator(
                         value: importController.importProgress.clamp(0.0, 1.0),
                         minHeight: 10,
-                        backgroundColor: GlassColors.glassWhite.withAlpha(60),
-                        color: GlassColors.redAccent,
+                        backgroundColor: SushiColors.surface,
+                        color: SushiColors.red,
                       ),
                     ),
                   ),
-                  const SizedBox(height: AppSpacing.sm),
+                  const SizedBox(height: SushiSpace.sm),
                   Obx(
                     () => AnimatedOpacity(
                       opacity: importController.importStatus.isEmpty ? 0 : 1,
@@ -71,7 +67,7 @@ class ImportDataScreen extends StatelessWidget {
                         importController.importStatus.isEmpty
                             ? 'Prêt à importer'
                             : importController.importStatus,
-                        style: GlassTypography.bodySmall,
+                        style: SushiTypo.bodySm,
                         textAlign: TextAlign.start,
                       ),
                     ),
@@ -79,15 +75,16 @@ class ImportDataScreen extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: AppSpacing.md),
-            GlassCard(
-              padding: const EdgeInsets.all(AppSpacing.lg),
+            const SizedBox(height: SushiSpace.md),
+            Container(
+              decoration: SushiDeco.card(),
+              padding: const EdgeInsets.all(SushiSpace.xl),
               child: LayoutBuilder(
                 builder: (context, constraints) {
                   final isCompact = constraints.maxWidth < 720;
                   final columns = isCompact ? 2 : 3;
                   final itemWidth =
-                      (constraints.maxWidth - AppSpacing.sm * (columns - 1)) /
+                      (constraints.maxWidth - SushiSpace.sm * (columns - 1)) /
                       columns;
 
                   final buttons = [
@@ -125,8 +122,8 @@ class ImportDataScreen extends StatelessWidget {
                   ];
 
                   return Wrap(
-                    spacing: AppSpacing.sm,
-                    runSpacing: AppSpacing.sm,
+                    spacing: SushiSpace.sm,
+                    runSpacing: SushiSpace.sm,
                     children: buttons
                         .map((btn) => SizedBox(width: itemWidth, child: btn))
                         .toList(),
@@ -150,27 +147,53 @@ class ImportDataScreen extends StatelessWidget {
       final isBusy = importController.isImporting;
       return SizedBox(
         height: 46,
-        child: ElevatedButton(
-          style: primary
-              ? GlassButtonStyle.primary()
-              : GlassButtonStyle.secondary(),
-          onPressed: isBusy
-              ? null
-              : () async {
+        child: primary
+            ? SushiCTAButton(
+                label: isBusy ? 'Import en cours...' : label,
+                isLoading: isBusy,
+                disabled: isBusy,
+                onTap: () async {
+                  if (isBusy) return;
                   try {
                     await onTap();
                   } catch (e) {
-                    Get.snackbar(
-                      'Erreur',
-                      'Échec : $e',
-                      snackPosition: SnackPosition.BOTTOM,
-                      backgroundColor: Colors.red,
-                      colorText: Colors.white,
+                    ScaffoldMessenger.of(Get.context!).showSnackBar(
+                      SnackBar(
+                        backgroundColor: SushiColors.inkSoft,
+                        content: Text(
+                          'Échec : $e',
+                          style: SushiTypo.bodySm.copyWith(
+                            color: SushiColors.white,
+                          ),
+                        ),
+                      ),
                     );
                   }
                 },
-          child: Text(label, style: GlassTypography.button),
-        ),
+              )
+            : OutlinedButton(
+                style: SushiButtonStyle.secondary(),
+                onPressed: isBusy
+                    ? null
+                    : () async {
+                        try {
+                          await onTap();
+                        } catch (e) {
+                          ScaffoldMessenger.of(Get.context!).showSnackBar(
+                            SnackBar(
+                              backgroundColor: SushiColors.inkSoft,
+                              content: Text(
+                                'Échec : $e',
+                                style: SushiTypo.bodySm.copyWith(
+                                  color: SushiColors.white,
+                                ),
+                              ),
+                            ),
+                          );
+                        }
+                      },
+                child: Text(label, style: TextStyle(color: Colors.redAccent)),
+              ),
       );
     });
   }

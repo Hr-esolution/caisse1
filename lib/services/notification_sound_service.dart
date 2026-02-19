@@ -1,6 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
-
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -16,18 +14,14 @@ class NotificationSoundService {
   bool _audioConfigured = false;
 
   Future<void> init() async {
-    if (_initialized) return;
-    // Skip audio on desktop/web to avoid MissingPlugin on some builds.
-    if (!(Platform.isAndroid || Platform.isIOS)) {
-      _initialized = true;
-      return;
-    }
+    if (_initialized && _audioConfigured) return;
     try {
       _audioPlayer = AudioPlayer();
       await _audioPlayer!.setReleaseMode(ReleaseMode.stop);
       _audioConfigured = true;
     } catch (e) {
       debugPrint('Audio init failed: $e');
+      _audioConfigured = false;
     }
     _initialized = true;
   }

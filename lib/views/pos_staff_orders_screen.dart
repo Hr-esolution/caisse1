@@ -328,6 +328,11 @@ class _PosStaffOrdersScreenState extends State<PosStaffOrdersScreen> {
                 icon: const Icon(Icons.receipt_long, size: 16),
                 label: const Text('Détails'),
               ),
+              OutlinedButton.icon(
+                onPressed: () => _previewOrder(order),
+                icon: const Icon(Icons.print_outlined, size: 16),
+                label: const Text('Imprimer'),
+              ),
               if (order.status == 'pending')
                 OutlinedButton.icon(
                   onPressed: () async {
@@ -421,6 +426,32 @@ class _PosStaffOrdersScreenState extends State<PosStaffOrdersScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _previewOrder(PosOrder order) async {
+    try {
+      final items = await DatabaseService.getPosOrderItems(order.id);
+      if (items.isEmpty) {
+        Get.snackbar(
+          'Impression',
+          'Aucun article sur cette commande',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        return;
+      }
+      await Printing.layoutPdf(
+        onLayout: (format) =>
+            buildKitchenAndCustomerTicketsPdf(order, items, format: format),
+        usePrinterSettings: false,
+        dynamicLayout: false,
+      );
+    } catch (e) {
+      Get.snackbar(
+        'Impression',
+        'Impossible d\'imprimer: $e',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
   }
 
   Widget _statusBadge(String text, {Color? color}) {

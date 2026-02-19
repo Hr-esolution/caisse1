@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:printing/printing.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:io';
 import 'dart:math' as math;
-import 'dart:ui';
 import '../controllers/category_controller.dart';
 import '../controllers/pos_controller.dart';
 import '../data/app_constants.dart';
@@ -13,6 +14,7 @@ import '../models/product_model.dart';
 import '../models/pos_order.dart';
 import '../models/pos_order_item.dart';
 import '../theme/app_theme.dart';
+import '../theme/sushi_design.dart';
 import '../utils/image_resolver_shared.dart';
 import '../utils/image_resolver.dart';
 import '../services/database_service.dart';
@@ -495,52 +497,33 @@ class _PosScreenState extends State<PosScreen> {
                           const SizedBox(width: AppSpacing.md),
                           Expanded(
                             flex: 4,
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(16),
-                              child: BackdropFilter(
-                                filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(16),
-                                    color: AppColors.blancPur.withAlpha(180),
-                                    border: Border.all(
-                                      color: AppColors.blancPur.withAlpha(140),
-                                    ),
-                                    boxShadow: const [
-                                      BoxShadow(
-                                        color: Color(0x14000000),
-                                        blurRadius: 8,
-                                        offset: Offset(0, -4),
-                                      ),
-                                    ],
+                            child: Container(
+                              decoration: SushiDeco.card(),
+                              child: Column(
+                                children: [
+                                  _topMenu(
+                                    title: '',
+                                    subTitle: pos.tableNumber == null
+                                        ? 'Table : -'
+                                        : 'Table : ${pos.tableNumber}',
+                                    action: _orderActions(pos),
                                   ),
-                                  child: Column(
-                                    children: [
-                                      _topMenu(
-                                        title: 'Commande',
-                                        subTitle: pos.tableNumber == null
-                                            ? 'Table : -'
-                                            : 'Table : ${pos.tableNumber}',
-                                        action: _orderActions(pos),
+                                  if (pos.error != null)
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: SushiSpace.md,
                                       ),
-                                      if (pos.error != null)
-                                        Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: AppSpacing.md,
-                                          ),
-                                          child: Text(
-                                            pos.error!,
-                                            style: const TextStyle(
-                                              color: Colors.red,
-                                            ),
-                                          ),
+                                      child: Text(
+                                        pos.error!,
+                                        style: SushiTypo.h4.copyWith(
+                                          color: SushiColors.error,
                                         ),
-                                      const SizedBox(height: AppSpacing.md),
-                                      Expanded(child: _cartList(pos)),
-                                      _summaryPanel(pos),
-                                    ],
-                                  ),
-                                ),
+                                      ),
+                                    ),
+                                  const SizedBox(height: SushiSpace.md),
+                                  Expanded(child: _cartList(pos)),
+                                  _summaryPanel(pos),
+                                ],
                               ),
                             ),
                           ),
@@ -564,79 +547,53 @@ class _PosScreenState extends State<PosScreen> {
     super.dispose();
   }
 
+  int? _lastOrderId;
+
   Widget _buildLockScreen(PosController pos) {
     return Center(
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Container(
-            width: 440,
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              color: AppColors.blancPur.withAlpha(170),
-              border: Border.all(
-                color: AppColors.blancPur.withAlpha(135),
-                width: 1.2,
+      child: Container(
+        width: 440,
+        padding: const EdgeInsets.all(SushiSpace.xl),
+        decoration: SushiDeco.card(),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 58,
+              height: 58,
+              decoration: SushiDeco.badge(bg: SushiColors.redPale),
+              child: const Icon(Icons.lock, size: 28, color: SushiColors.red),
+            ),
+            const SizedBox(height: SushiSpace.md),
+            const Text('Entrer le code PIN', style: SushiTypo.h2),
+            const SizedBox(height: SushiSpace.md),
+            TextField(
+              controller: _pinController,
+              keyboardType: TextInputType.number,
+              obscureText: true,
+              decoration: const InputDecoration(
+                labelText: 'PIN',
+                border: OutlineInputBorder(),
               ),
-              boxShadow: const [
-                BoxShadow(
-                  color: Color(0x14000000),
-                  blurRadius: 8,
-                  offset: Offset(0, -4),
-                ),
-              ],
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 58,
-                  height: 58,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: LinearGradient(
-                      colors: [
-                        AppColors.deepTeal.withAlpha(200),
-                        AppColors.terraCotta.withAlpha(200),
-                      ],
-                    ),
-                  ),
-                  child: const Icon(Icons.lock, size: 28, color: Colors.white),
-                ),
-                const SizedBox(height: AppSpacing.md),
-                const Text(
-                  'Entrer le code PIN',
-                  style: AppTypography.headline2,
-                ),
-                const SizedBox(height: AppSpacing.md),
-                TextField(
-                  controller: _pinController,
-                  keyboardType: TextInputType.number,
-                  obscureText: true,
-                  decoration: const InputDecoration(
-                    labelText: 'PIN',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                if (pos.error != null) ...[
-                  const SizedBox(height: AppSpacing.sm),
-                  Text(pos.error!, style: const TextStyle(color: Colors.red)),
-                ],
-                const SizedBox(height: AppSpacing.md),
-                _actionButton(
-                  icon: Icons.lock_open,
-                  label: 'Déverrouiller',
-                  onPressed: () async {
-                    final pin = _pinController.text.trim();
-                    await pos.unlockWithPin(pin);
-                    _pinController.clear();
-                  },
-                ),
-              ],
+            if (pos.error != null) ...[
+              const SizedBox(height: SushiSpace.sm),
+              Text(
+                pos.error!,
+                style: SushiTypo.h4.copyWith(color: SushiColors.error),
+              ),
+            ],
+            const SizedBox(height: SushiSpace.md),
+            SushiCTAButton(
+              label: 'Déverrouiller',
+              icon: Icons.lock_open,
+              onTap: () async {
+                final pin = _pinController.text.trim();
+                await pos.unlockWithPin(pin);
+                _pinController.clear();
+              },
             ),
-          ),
+          ],
         ),
       ),
     );
@@ -782,21 +739,96 @@ class _PosScreenState extends State<PosScreen> {
                 ? 'Enregistrer la commande'
                 : 'Modifier la commande',
             onPressed: () async {
-              if (pos.isCreatingOrder) return;
-              if (pos.fulfillmentType == 'on_site' &&
-                  (pos.tableNumber == null || pos.tableNumber!.isEmpty)) {
-                await _promptTableNumber(pos);
+              try {
+                if (pos.isCreatingOrder) return;
+                if (pos.fulfillmentType == 'on_site' &&
+                    (pos.tableNumber == null || pos.tableNumber!.isEmpty)) {
+                  await _promptTableNumber(pos);
+                  return;
+                }
+                final orderId = await pos.createOrder();
+                if (orderId != null && pos.fulfillmentType == 'on_site') {
+                  final table = pos.tableNumber;
+                  if (table != null && table.isNotEmpty) {
+                    await pos.markTableOccupied(table);
+                  }
+                }
+                if (orderId != null) {
+                  setState(() => _lastOrderId = orderId);
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Commande enregistrée (#$orderId)',
+                          style: SushiTypo.bodySm.copyWith(
+                            color: SushiColors.white,
+                          ),
+                        ),
+                        backgroundColor: SushiColors.green,
+                      ),
+                    );
+                  }
+                }
+              } catch (e) {
+                if (!mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      'Erreur enregistrement/print : $e',
+                      style: SushiTypo.bodySm.copyWith(
+                        color: SushiColors.white,
+                      ),
+                    ),
+                    backgroundColor: SushiColors.error,
+                  ),
+                );
+              }
+            },
+          ),
+          _actionButton(
+            icon: Icons.print_outlined,
+            label: 'Imprimer le ticket',
+            onPressed: () async {
+              final currentOrderId = _lastOrderId ?? pos.editingOrderId;
+              if (currentOrderId == null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      'Aucune commande en cours à imprimer',
+                      style: SushiTypo.bodySm.copyWith(
+                        color: SushiColors.white,
+                      ),
+                    ),
+                    backgroundColor: SushiColors.error,
+                  ),
+                );
                 return;
               }
-              final orderId = await pos.createOrder();
-              if (orderId != null && pos.fulfillmentType == 'on_site') {
-                await pos.markTableOccupied(pos.tableNumber!);
+              try {
+                await _autoPrintKitchenAndCustomerByOrderId(currentOrderId);
+              } catch (e, st) {
+                debugPrint('Print button error: $e\n$st');
+                if (!mounted) return;
+                final messenger = ScaffoldMessenger.of(context);
+                messenger.showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      'Erreur impression : $e',
+                      style: SushiTypo.bodySm.copyWith(
+                        color: SushiColors.white,
+                      ),
+                    ),
+                    backgroundColor: SushiColors.error,
+                  ),
+                );
               }
-              if (orderId != null) {
-                await _autoPrintKitchenAndCustomerByOrderId(orderId);
-                pos.lock();
-                if (mounted) Get.offAllNamed('/pos');
-              }
+            },
+          ),
+          _actionButton(
+            icon: Icons.exit_to_app_rounded,
+            label: 'Sortir',
+            onPressed: () {
+              _scheduleExitAfterAction(immediate: true);
             },
           ),
         ],
@@ -1066,6 +1098,7 @@ class _PosScreenState extends State<PosScreen> {
   Future<void> _showOrderDetails(PosController pos, PosOrder order) async {
     final items = await DatabaseService.getPosOrderItems(order.id);
     if (!mounted) return;
+
     final statusColor = _orderStatusColor(order.status);
     final locationLabel = order.fulfillmentType == 'on_site'
         ? 'Table'
@@ -1079,52 +1112,44 @@ class _PosScreenState extends State<PosScreen> {
               : order.deliveryAddress!.trim());
     final cancelReason = order.cancelReason?.trim().isEmpty ?? true
         ? '-'
-        : order.cancelReason!.trim();
+        : order.cancelReason!;
+    final note = order.note?.trim().isEmpty ?? true ? '-' : order.note!;
+    final paymentMethod = order.paymentMethod?.trim().isEmpty ?? true
+        ? 'Non renseigné'
+        : order.paymentMethod!;
+    final reward = order.rewardId != null ? '#${order.rewardId}' : '-';
+    final discountLabel = order.hasDiscount && order.discountAmount > 0
+        ? '-${_money(order.discountAmount)}'
+        : 'Aucune';
+    final originalTotalLabel = order.originalTotal > 0
+        ? _money(order.originalTotal)
+        : _money(order.totalPrice);
+    final createdLabel = '${order.createdAt.toLocal()}'.split('.').first;
+    final updatedLabel = '${order.updatedAt.toLocal()}'.split('.').first;
 
     await showDialog(
       context: context,
-      barrierColor: Colors.black54,
+      barrierColor: SushiColors.ink,
       builder: (dialogContext) {
         return Dialog(
           backgroundColor: Colors.transparent,
           insetPadding: const EdgeInsets.symmetric(
-            horizontal: 18,
-            vertical: 24,
+            horizontal: SushiSpace.lg,
+            vertical: SushiSpace.lg,
           ),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 820, maxHeight: 720),
             child: Container(
-              decoration: BoxDecoration(
-                color: AppColors.blancPur,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: statusColor.withAlpha(85)),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Color(0x26000000),
-                    blurRadius: 18,
-                    offset: Offset(0, 10),
-                  ),
-                ],
-              ),
+              decoration: SushiDeco.card(),
               child: Column(
                 children: [
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.fromLTRB(18, 14, 18, 14),
-                    decoration: BoxDecoration(
-                      borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(20),
-                      ),
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          statusColor.withAlpha(34),
-                          AppColors.cloudDancer,
-                          AppColors.livingCoral.withAlpha(26),
-                        ],
-                      ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: SushiSpace.xl,
+                      vertical: SushiSpace.md,
                     ),
+                    decoration: SushiDeco.featured(),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -1134,65 +1159,44 @@ class _PosScreenState extends State<PosScreen> {
                             children: [
                               Text(
                                 'Commande #${order.id}',
-                                style: const TextStyle(
-                                  fontSize: 19,
-                                  fontWeight: FontWeight.w800,
-                                  color: AppColors.charbon,
-                                ),
+                                style: SushiTypo.h1,
                               ),
-                              const SizedBox(height: 8),
+                              const SizedBox(height: SushiSpace.sm),
                               Wrap(
-                                spacing: 6,
-                                runSpacing: 6,
+                                spacing: SushiSpace.sm,
+                                runSpacing: SushiSpace.sm,
                                 children: [
                                   _statusBadge(
-                                    Icons.flag_outlined,
                                     _labelForOrderStatus(order.status),
+                                    statusColor,
                                   ),
                                   _statusBadge(
-                                    Icons.phone_android_outlined,
                                     _labelForChannel(order.channel),
+                                    SushiColors.teal,
                                   ),
                                   _statusBadge(
-                                    Icons.local_shipping_outlined,
                                     _labelForFulfillment(order.fulfillmentType),
+                                    SushiColors.orange,
                                   ),
                                 ],
                               ),
                             ],
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: SushiSpace.md),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 8,
+                            horizontal: SushiSpace.lg,
+                            vertical: SushiSpace.sm,
                           ),
-                          decoration: BoxDecoration(
-                            color: AppColors.blancPur.withAlpha(220),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: AppColors.deepTeal.withAlpha(72),
-                            ),
-                          ),
+                          decoration: SushiDeco.tinted(SushiColors.white),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
-                              const Text(
-                                'Total',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.grisModerne,
-                                ),
-                              ),
+                              Text('Total', style: SushiTypo.caption),
                               Text(
                                 _money(order.totalPrice),
-                                style: const TextStyle(
-                                  fontSize: 21,
-                                  fontWeight: FontWeight.w800,
-                                  color: AppColors.deepTeal,
-                                ),
+                                style: SushiTypo.priceLg,
                               ),
                             ],
                           ),
@@ -1202,13 +1206,18 @@ class _PosScreenState extends State<PosScreen> {
                   ),
                   Expanded(
                     child: SingleChildScrollView(
-                      padding: const EdgeInsets.fromLTRB(18, 14, 18, 12),
+                      padding: const EdgeInsets.fromLTRB(
+                        SushiSpace.xl,
+                        SushiSpace.md,
+                        SushiSpace.xl,
+                        SushiSpace.sm,
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Wrap(
-                            spacing: 10,
-                            runSpacing: 10,
+                            spacing: SushiSpace.md,
+                            runSpacing: SushiSpace.md,
                             children: [
                               _orderDetailsInfoCard(
                                 icon: Icons.person_outline,
@@ -1232,29 +1241,72 @@ class _PosScreenState extends State<PosScreen> {
                                 label: 'Annulation',
                                 value: cancelReason,
                               ),
+                              _orderDetailsInfoCard(
+                                icon: Icons.sticky_note_2_outlined,
+                                label: 'Note commande',
+                                value: note,
+                              ),
+                              _orderDetailsInfoCard(
+                                icon: Icons.badge_outlined,
+                                label: 'Staff ID',
+                                value: order.staffId.toString(),
+                              ),
+                              _orderDetailsInfoCard(
+                                icon: Icons.store_mall_directory_outlined,
+                                label: 'Restaurant',
+                                value: order.restaurantId?.toString() ?? '-',
+                              ),
+                              _orderDetailsInfoCard(
+                                icon: Icons.card_giftcard_outlined,
+                                label: 'Récompense',
+                                value: reward,
+                              ),
+                              _orderDetailsInfoCard(
+                                icon: Icons.payment_outlined,
+                                label: 'Paiement',
+                                value: paymentMethod,
+                              ),
+                              _orderDetailsInfoCard(
+                                icon: Icons.receipt_long_outlined,
+                                label: 'Statut paiement',
+                                value: order.paymentStatus,
+                              ),
+                              _orderDetailsInfoCard(
+                                icon: Icons.percent_outlined,
+                                label: 'Remise',
+                                value: discountLabel,
+                              ),
+                              _orderDetailsInfoCard(
+                                icon: Icons.calculate_outlined,
+                                label: 'Total initial',
+                                value: originalTotalLabel,
+                              ),
+                              _orderDetailsInfoCard(
+                                icon: Icons.schedule_outlined,
+                                label: 'Créée',
+                                value: createdLabel,
+                              ),
+                              _orderDetailsInfoCard(
+                                icon: Icons.update_outlined,
+                                label: 'MAJ',
+                                value: updatedLabel,
+                              ),
                             ],
                           ),
-                          const SizedBox(height: 14),
+                          const SizedBox(height: SushiSpace.md),
                           Text(
                             'Articles (${items.length})',
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                              color: AppColors.charbon,
-                            ),
+                            style: SushiTypo.h3,
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: SushiSpace.sm),
                           if (items.isEmpty)
                             Container(
                               width: double.infinity,
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: AppColors.cloudDancer.withAlpha(180),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: const Text(
+                              padding: const EdgeInsets.all(SushiSpace.md),
+                              decoration: SushiDeco.card(),
+                              child: Text(
                                 'Aucun article trouvé pour cette commande.',
-                                style: AppTypography.bodySmall,
+                                style: SushiTypo.bodyMd,
                               ),
                             )
                           else
@@ -1270,32 +1322,33 @@ class _PosScreenState extends State<PosScreen> {
                   ),
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
-                    decoration: BoxDecoration(
-                      color: AppColors.cloudDancer.withAlpha(150),
-                      borderRadius: const BorderRadius.vertical(
-                        bottom: Radius.circular(20),
-                      ),
+                    padding: const EdgeInsets.fromLTRB(
+                      SushiSpace.lg,
+                      SushiSpace.sm,
+                      SushiSpace.lg,
+                      SushiSpace.lg,
                     ),
+                    decoration: SushiDeco.tinted(SushiColors.surface),
                     child: Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
+                      spacing: SushiSpace.sm,
+                      runSpacing: SushiSpace.sm,
                       alignment: WrapAlignment.end,
                       children: [
-                        OutlinedButton.icon(
+                        ElevatedButton.icon(
+                          style: SushiButtonStyle.secondary(),
                           onPressed: () async {
                             final ok = await pos.updateOrderStatus(
                               order,
                               'preparing',
                             );
                             if (_isMobileApi(order)) {
-                              final items =
+                              final orderItems =
                                   await DatabaseService.getPosOrderItems(
                                     order.id,
                                   );
                               await _printKitchenAndCustomerTickets(
                                 order,
-                                items,
+                                orderItems,
                               );
                             }
                             if (!ok && mounted) {
@@ -1314,9 +1367,10 @@ class _PosScreenState extends State<PosScreen> {
                             Icons.soup_kitchen_outlined,
                             size: 16,
                           ),
-                          label: const Text('Préparation'),
+                          label: Text('Préparation', style: SushiTypo.h4),
                         ),
-                        OutlinedButton.icon(
+                        ElevatedButton.icon(
+                          style: SushiButtonStyle.secondary(),
                           onPressed: () async {
                             final ok = await pos.updateOrderStatus(
                               order,
@@ -1338,85 +1392,29 @@ class _PosScreenState extends State<PosScreen> {
                             Icons.check_circle_outline,
                             size: 16,
                           ),
-                          label: const Text('Prête'),
+                          label: Text('Prête', style: SushiTypo.h4),
                         ),
-                        OutlinedButton.icon(
-                          onPressed: () async {
-                            await _showPrintTicket(order, items);
-                          },
-                          icon: const Icon(
-                            Icons.receipt_long_outlined,
-                            size: 16,
-                          ),
-                          label: const Text('Ticket'),
-                        ),
-                        OutlinedButton.icon(
-                          onPressed: () async {
-                            await _printTicket(order, items);
-                          },
-                          icon: const Icon(Icons.print_outlined, size: 16),
-                          label: const Text('Imprimer'),
-                        ),
-                        if (pos.canEditOrders && order.status == 'pending')
-                          OutlinedButton.icon(
-                            onPressed: () async {
-                              await _showEditOrderDialog(pos, order);
-                              if (dialogContext.mounted) {
-                                Navigator.pop(dialogContext);
-                              }
-                            },
-                            icon: const Icon(Icons.edit_outlined, size: 16),
-                            label: const Text('Editer'),
-                          ),
-                        if (pos.canModifyOrders && order.status == 'pending')
-                          OutlinedButton.icon(
-                            onPressed: () async {
-                              final reason = await _promptCancelReason();
-                              if (reason == null) return;
-                              final ok = await pos.cancelOrder(
-                                order,
-                                reason: reason,
+                        SushiCTAButton(
+                          label: 'Marquer payée',
+                          icon: Icons.credit_card,
+                          onTap: () async {
+                            final ok = await pos.markOrderPaid(order);
+                            if (!ok && mounted) {
+                              Get.snackbar(
+                                'Erreur backend',
+                                pos.error ??
+                                    'Commande locale mise à jour, notification backend échouée.',
+                                snackPosition: SnackPosition.BOTTOM,
                               );
-                              if (!ok && mounted) {
-                                Get.snackbar(
-                                  'Erreur backend',
-                                  pos.error ??
-                                      'Commande locale mise à jour, notification backend échouée.',
-                                  snackPosition: SnackPosition.BOTTOM,
-                                );
-                              }
-                              if (dialogContext.mounted) {
-                                Navigator.pop(dialogContext);
-                              }
-                            },
-                            icon: const Icon(Icons.cancel_outlined, size: 16),
-                            label: const Text('Annuler'),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: Colors.red.shade700,
-                            ),
-                          ),
-                        if (pos.canModifyOrders)
-                          OutlinedButton.icon(
-                            onPressed: () async {
-                              await pos.deleteOrder(order);
-                              if (dialogContext.mounted) {
-                                Navigator.pop(dialogContext);
-                              }
-                            },
-                            icon: const Icon(Icons.delete_outline, size: 16),
-                            label: const Text('Supprimer'),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: Colors.red.shade700,
-                            ),
-                          ),
-                        FilledButton.icon(
+                            }
+                            if (dialogContext.mounted) {
+                              Navigator.pop(dialogContext);
+                            }
+                          },
+                        ),
+                        TextButton(
                           onPressed: () => Navigator.pop(dialogContext),
-                          icon: const Icon(Icons.close, size: 17),
-                          label: const Text('Fermer'),
-                          style: FilledButton.styleFrom(
-                            backgroundColor: AppColors.deepTeal,
-                            foregroundColor: Colors.white,
-                          ),
+                          child: Text('Fermer', style: SushiTypo.h4),
                         ),
                       ],
                     ),
@@ -1481,40 +1479,241 @@ class _PosScreenState extends State<PosScreen> {
   }
 
   Future<void> _printTicket(PosOrder order, List<PosOrderItem> items) async {
-    await Printing.layoutPdf(
-      onLayout: (format) => buildTicketPdf(order, items, format: format),
+    await _printOrPreview(
+      builder: (format) => buildTicketPdf(order, items, format: format),
+      fallbackTitle: 'Ticket (aperçu)',
+      onFail: () => _showTextTicket(order, items, title: 'Ticket (texte)'),
     );
   }
 
   Future<void> _autoPrintKitchenAndCustomerByOrderId(int orderId) async {
-    final order = await DatabaseService.getPosOrderById(orderId);
-    if (order == null) return;
-    final items = await DatabaseService.getPosOrderItems(orderId);
-    if (items.isEmpty) return;
-    await _printKitchenAndCustomerTickets(order, items);
+    try {
+      final order = await DatabaseService.getPosOrderById(orderId);
+      if (order == null) return;
+      final items = await DatabaseService.getPosOrderItems(orderId);
+      if (items.isEmpty) return;
+      await _printKitchenAndCustomerTickets(order, items);
+    } catch (_) {
+      if (!mounted) return;
+      final order = await DatabaseService.getPosOrderById(orderId);
+      if (order == null) return;
+      final items = await DatabaseService.getPosOrderItems(orderId);
+      if (items.isEmpty) return;
+      await _showTicketPreview(
+        (format) =>
+            buildKitchenAndCustomerTicketsPdf(order, items, format: format),
+        title: 'Tickets (aperçu, impression indisponible)',
+      );
+    }
   }
 
   Future<void> _printKitchenAndCustomerTickets(
     PosOrder order,
     List<PosOrderItem> items,
   ) async {
-    try {
-      await Printing.layoutPdf(
-        onLayout: (format) =>
-            buildKitchenAndCustomerTicketsPdf(order, items, format: format),
-      );
-    } catch (e) {
-      if (!mounted) return;
-      Get.snackbar(
-        'Impression',
-        'Impossible d\'imprimer les tickets: $e',
-        snackPosition: SnackPosition.BOTTOM,
-      );
-    }
+    await _printOrPreview(
+      builder: (format) =>
+          buildKitchenAndCustomerTicketsPdf(order, items, format: format),
+      fallbackTitle: 'Tickets (aperçu, imprimante absente)',
+      onFail: () => _showTextTicket(
+        order,
+        items,
+        title: 'Tickets (texte, imprimante absente)',
+      ),
+    );
   }
 
   bool _isMobileApi(PosOrder order) {
     return order.channel.trim().toLowerCase() == 'api';
+  }
+
+  void _scheduleExitAfterAction({bool immediate = false}) {
+    final delay = immediate ? Duration.zero : const Duration(seconds: 5);
+    Future.delayed(delay, () {
+      if (!mounted) return;
+      final pos = Get.find<PosController>();
+      pos.lock();
+      Get.offAllNamed('/pos-lock');
+    });
+  }
+
+  Future<void> _printOrPreview({
+    required Future<Uint8List> Function(PdfPageFormat format) builder,
+    required String fallbackTitle,
+    Future<void> Function()? onFail,
+  }) async {
+    Future<Uint8List> safeBuilder(PdfPageFormat format) =>
+        _safePdf(builder, format);
+    if (!mounted) return;
+    try {
+      // Sur macOS, on passe directement en aperçu pour éviter le blocage "pas d'imprimante".
+      if (Platform.isMacOS) {
+        await _showTicketPreview(safeBuilder, title: fallbackTitle);
+        return;
+      }
+      // Essai impression avec timeout de 6s pour éviter un blocage beachball.
+      try {
+        await Printing.layoutPdf(
+          onLayout: (format) => safeBuilder(format),
+        ).timeout(const Duration(seconds: 6));
+        return;
+      } on Exception catch (e) {
+        debugPrint('Printing.layoutPdf error/timeout: $e');
+      } catch (e, st) {
+        debugPrint('Printing.layoutPdf error: $e\n$st');
+      }
+      // fallback preview si impression impossible
+      await _showTicketPreview(safeBuilder, title: fallbackTitle);
+    } catch (e, st) {
+      debugPrint('Print preview error: $e\n$st');
+      if (onFail != null) {
+        await onFail();
+        return;
+      }
+      if (!mounted) return;
+      await _showTicketPreview(
+        (format) => _fallbackErrorPdf('Impossible d\'afficher le ticket : $e'),
+        title: fallbackTitle,
+      );
+    }
+  }
+
+  Future<Uint8List> _safePdf(
+    Future<Uint8List> Function(PdfPageFormat format) builder,
+    PdfPageFormat format,
+  ) async {
+    try {
+      return await builder(format);
+    } catch (e) {
+      return _fallbackErrorPdf('Erreur: $e', format: format);
+    }
+  }
+
+  Future<Uint8List> _fallbackErrorPdf(
+    String message, {
+    PdfPageFormat format = PdfPageFormat.roll80,
+  }) async {
+    final doc = pw.Document();
+    doc.addPage(
+      pw.Page(
+        pageFormat: format,
+        build: (context) => pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            pw.Text(
+              'Ticket non imprimé',
+              style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold),
+            ),
+            pw.SizedBox(height: 8),
+            pw.Text(message, style: const pw.TextStyle(fontSize: 11)),
+          ],
+        ),
+      ),
+    );
+    return doc.save();
+  }
+
+  Future<void> _showTextTicket(
+    PosOrder order,
+    List<PosOrderItem> items, {
+    required String title,
+  }) async {
+    final text = _buildTicketText(order, items);
+    if (!mounted) return;
+    final ctx = context;
+    await showDialog(
+      context: ctx,
+      builder: (dialogCtx) => AlertDialog(
+        title: Text(title, style: SushiTypo.h3),
+        content: SizedBox(
+          width: 480,
+          child: SelectableText(text, style: SushiTypo.bodyMd),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Clipboard.setData(ClipboardData(text: text));
+              Navigator.of(dialogCtx).pop();
+            },
+            child: const Text('Copier'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogCtx).pop(),
+            child: const Text('Fermer'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _buildTicketText(PosOrder order, List<PosOrderItem> items) {
+    final money = AppSettingsService.instance.formatAmount;
+    final buf = StringBuffer()
+      ..writeln('Commande #${order.id}')
+      ..writeln('Type: ${order.fulfillmentType}')
+      ..writeln('Table: ${order.tableNumber ?? '-'}')
+      ..writeln('Client: ${order.customerName ?? '-'}')
+      ..writeln('-----------------------------');
+    for (final it in items) {
+      buf.writeln(
+        '${it.quantity} x ${it.productName}  ${money(it.unitPrice * it.quantity)}',
+      );
+    }
+    buf
+      ..writeln('-----------------------------')
+      ..writeln('Total: ${money(order.totalPrice)}');
+    return buf.toString();
+  }
+
+  Future<void> _showTicketPreview(
+    Future<Uint8List> Function(PdfPageFormat format) builder, {
+    required String title,
+  }) async {
+    if (!mounted) return;
+    await showDialog(
+      context: context,
+      builder: (_) {
+        return Dialog(
+          child: SizedBox(
+            width: 460,
+            height: 620,
+            child: Column(
+              children: [
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: SushiSpace.lg,
+                    vertical: SushiSpace.sm,
+                  ),
+                  decoration: SushiDeco.card(),
+                  child: Row(
+                    children: [
+                      Text(title, style: SushiTypo.h3),
+                      const Spacer(),
+                      IconButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        icon: const Icon(Icons.close, size: 18),
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(height: 1, color: SushiColors.divider),
+                Expanded(
+                  child: PdfPreview(
+                    build: builder,
+                    allowSharing: true,
+                    allowPrinting: false,
+                    canChangeOrientation: false,
+                    canChangePageFormat: false,
+                    pdfFileName: 'ticket-preview.pdf',
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   Future<String?> _promptCancelReason() async {
@@ -1729,31 +1928,23 @@ class _PosScreenState extends State<PosScreen> {
     final text = value.trim().isEmpty ? '-' : value.trim();
     return Container(
       constraints: const BoxConstraints(minWidth: 220, maxWidth: 340),
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
-      decoration: BoxDecoration(
-        color: AppColors.cloudDancer.withAlpha(170),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppColors.grisLeger.withAlpha(180)),
-      ),
+      padding: const EdgeInsets.all(SushiSpace.md),
+      decoration: SushiDeco.card(),
       child: Row(
         children: [
-          Icon(icon, size: 16, color: AppColors.deepTeal),
-          const SizedBox(width: 8),
+          Icon(icon, size: 18, color: SushiColors.red),
+          const SizedBox(width: SushiSpace.sm),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label, style: AppTypography.caption),
-                const SizedBox(height: 2),
+                Text(label, style: SushiTypo.caption),
+                const SizedBox(height: SushiSpace.xs),
                 Text(
                   text,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.charbon,
-                  ),
+                  style: SushiTypo.h4,
                 ),
               ],
             ),
@@ -1765,39 +1956,22 @@ class _PosScreenState extends State<PosScreen> {
 
   Widget _orderDetailsItemCard(PosOrderItem item) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
-      decoration: BoxDecoration(
-        color: AppColors.blancPur.withAlpha(235),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppColors.grisLeger.withAlpha(170)),
+      margin: const EdgeInsets.only(bottom: SushiSpace.sm),
+      padding: const EdgeInsets.symmetric(
+        horizontal: SushiSpace.md,
+        vertical: SushiSpace.sm,
       ),
+      decoration: SushiDeco.card(),
       child: Row(
         children: [
-          Expanded(
-            child: Text(
-              item.productName,
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: AppColors.charbon,
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
+          Expanded(child: Text(item.productName, style: SushiTypo.h4)),
+          const SizedBox(width: SushiSpace.sm),
           Text(
             '${item.quantity} x ${_money(item.unitPrice)}',
-            style: const TextStyle(fontSize: 12, color: AppColors.grisModerne),
+            style: SushiTypo.bodySm,
           ),
-          const SizedBox(width: 10),
-          Text(
-            _money(item.quantity * item.unitPrice),
-            style: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-              color: AppColors.deepTeal,
-            ),
-          ),
+          const SizedBox(width: SushiSpace.md),
+          Text(_money(item.quantity * item.unitPrice), style: SushiTypo.price),
         ],
       ),
     );
@@ -1823,17 +1997,17 @@ class _PosScreenState extends State<PosScreen> {
   Color _orderStatusColor(String value) {
     switch (value.trim().toLowerCase()) {
       case 'pending':
-        return Colors.orange.shade700;
+        return SushiColors.orange;
       case 'preparing':
-        return Colors.blue.shade700;
+        return SushiColors.teal;
       case 'ready':
-        return Colors.green.shade700;
+        return SushiColors.green;
       case 'paid':
-        return Colors.teal.shade700;
+        return SushiColors.teal;
       case 'cancelled':
-        return Colors.red.shade700;
+        return SushiColors.error;
       default:
-        return AppColors.deepTeal;
+        return SushiColors.red;
     }
   }
 
@@ -1856,17 +2030,18 @@ class _PosScreenState extends State<PosScreen> {
       mainAxisSize: MainAxisSize.min,
       children: [
         _statusBadge(
-          Icons.point_of_sale_outlined,
           'CA ${_money(pos.ordersToday.fold<double>(0.0, (s, o) => s + o.totalPrice))}',
+          SushiColors.red,
         ),
-        const SizedBox(width: AppSpacing.md),
+        const SizedBox(width: SushiSpace.md),
         TextButton.icon(
           onPressed: () {
             pos.lock();
             Get.offAllNamed('/pos');
           },
-          icon: const Icon(Icons.lock, size: 16),
-          label: const Text('Verrouiller'),
+          icon: const Icon(Icons.lock, size: 16, color: SushiColors.red),
+          label: Text('Verrouiller', style: SushiTypo.h4),
+          style: SushiButtonStyle.secondary(),
         ),
       ],
     );
@@ -1875,76 +2050,39 @@ class _PosScreenState extends State<PosScreen> {
   Widget _orderInfoBar(PosController pos) {
     return Container(
       margin: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.md,
-        vertical: AppSpacing.sm,
+        horizontal: SushiSpace.md,
+        vertical: SushiSpace.sm,
       ),
       padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.md,
-        vertical: AppSpacing.sm,
+        horizontal: SushiSpace.md,
+        vertical: SushiSpace.sm,
       ),
-      decoration: BoxDecoration(
-        color: AppColors.blancPur.withAlpha(200),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.grisLeger),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x14000000),
-            blurRadius: 8,
-            offset: Offset(0, -4),
-          ),
-        ],
-      ),
+      decoration: SushiDeco.card(),
       child: Row(
         children: [
           _statusBadge(
-            Icons.receipt_outlined,
             _labelForFulfillment(pos.fulfillmentType),
+            SushiColors.teal,
           ),
-          const SizedBox(width: AppSpacing.md),
-          Text(
-            'Table : ${pos.tableNumber ?? '-'}',
-            style: AppTypography.bodySmall,
-          ),
-          const SizedBox(width: AppSpacing.md),
-          Text(
-            'Client : ${pos.customerName ?? '-'}',
-            style: AppTypography.bodySmall,
-          ),
+          const SizedBox(width: SushiSpace.md),
+          Text('Table : ${pos.tableNumber ?? '-'}', style: SushiTypo.h4),
+          const SizedBox(width: SushiSpace.md),
+          Text('Client : ${pos.customerName ?? '-'}', style: SushiTypo.h4),
         ],
       ),
     );
   }
 
-  Widget _statusBadge(IconData icon, String text) {
+  Widget _statusBadge(String text, Color color) {
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.sm,
-        vertical: AppSpacing.xs,
+        horizontal: SushiSpace.sm,
+        vertical: SushiSpace.xs,
       ),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(999),
-        gradient: LinearGradient(
-          colors: [
-            AppColors.deepTeal.withAlpha(42),
-            AppColors.livingCoral.withAlpha(32),
-          ],
-        ),
-        border: Border.all(color: AppColors.deepTeal.withAlpha(36)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 14, color: AppColors.deepTeal),
-          const SizedBox(width: AppSpacing.xs),
-          Text(
-            text,
-            style: const TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: AppColors.deepTeal,
-            ),
-          ),
-        ],
+      decoration: SushiDeco.badge(bg: color),
+      child: Text(
+        text,
+        style: SushiTypo.tag.copyWith(color: SushiColors.white),
       ),
     );
   }
@@ -2386,7 +2524,7 @@ class _PosScreenState extends State<PosScreen> {
     required VoidCallback onPressed,
   }) {
     final pos = Get.find<PosController>();
-    final busy = pos.isCreatingOrder;
+    final busy = pos.isCreatingOrder && icon == Icons.check;
     return SizedBox(
       width: double.infinity,
       height: 40,
@@ -2452,3 +2590,5 @@ class _PosScreenState extends State<PosScreen> {
     );
   }
 }
+
+// ignore_for_file: unused_element

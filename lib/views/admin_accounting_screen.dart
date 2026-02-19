@@ -5,6 +5,7 @@ import '../models/user.dart';
 import '../services/app_settings_service.dart';
 import '../services/database_service.dart';
 import '../theme/app_theme.dart';
+import '../theme/sushi_design.dart';
 import '../widgets/admin_shell.dart';
 
 class AdminAccountingScreen extends StatefulWidget {
@@ -259,11 +260,7 @@ class _AdminAccountingScreenState extends State<AdminAccountingScreen> {
           const SizedBox(height: 8),
           Text(
             value,
-            style: AppTypography.mono.copyWith(
-              color: foreground,
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-            ),
+            style: SushiTypo.price.copyWith(color: foreground, fontSize: 14),
           ),
         ],
       ),
@@ -408,10 +405,9 @@ class _AdminAccountingScreenState extends State<AdminAccountingScreen> {
             value,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: AppTypography.mono.copyWith(
+            style: SushiTypo.price.copyWith(
               fontSize: 12,
               color: highlighted ? AppColors.terraCotta : AppColors.charbon,
-              fontWeight: FontWeight.w700,
             ),
           ),
         ],
@@ -498,9 +494,8 @@ class _AdminAccountingScreenState extends State<AdminAccountingScreen> {
                           ),
                           child: Text(
                             _formatAmount(summary.revenue),
-                            style: AppTypography.mono.copyWith(
+                            style: SushiTypo.price.copyWith(
                               color: AppColors.deepTeal,
-                              fontWeight: FontWeight.w700,
                             ),
                           ),
                         ),
@@ -578,10 +573,7 @@ class _AdminAccountingScreenState extends State<AdminAccountingScreen> {
           const SizedBox(width: 8),
           Text(
             _formatAmount(amount),
-            style: AppTypography.mono.copyWith(
-              color: AppColors.terraCotta,
-              fontWeight: FontWeight.w700,
-            ),
+            style: SushiTypo.price.copyWith(color: AppColors.terraCotta),
           ),
         ],
       ),

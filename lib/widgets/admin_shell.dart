@@ -6,8 +6,7 @@ import '../controllers/auth_controller.dart';
 import '../controllers/restaurant_controller.dart';
 import '../controllers/settings_controller.dart';
 import '../controllers/sync_controller.dart';
-import '../data/glass_theme.dart';
-import '../theme/app_theme.dart';
+import '../theme/sushi_design.dart';
 import '../utils/pos_window.dart';
 
 class AdminShell extends StatefulWidget {
@@ -50,7 +49,7 @@ class _AdminShellState extends State<AdminShell> {
     final restaurantController = Get.find<RestaurantController>();
 
     return Scaffold(
-      backgroundColor: Colors.transparent,
+      backgroundColor: SushiColors.bg,
       floatingActionButton: widget.floatingActionButton,
       body: SafeArea(
         child: Row(
@@ -62,7 +61,7 @@ class _AdminShellState extends State<AdminShell> {
                   _header(auth, restaurantController),
                   Expanded(
                     child: Padding(
-                      padding: const EdgeInsets.all(AppSpacing.lg),
+                      padding: const EdgeInsets.all(SushiSpace.lg),
                       child: widget.child,
                     ),
                   ),
@@ -83,19 +82,13 @@ class _AdminShellState extends State<AdminShell> {
     final canPop = Navigator.of(context).canPop();
     return Container(
       height: 56,
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+      padding: const EdgeInsets.symmetric(horizontal: SushiSpace.lg),
       decoration: BoxDecoration(
-        color: GlassColors.glassWhite.withAlpha(210),
-        border: Border(
-          bottom: BorderSide(color: GlassColors.sushi.withAlpha(80), width: 1),
+        color: SushiColors.white,
+        border: const Border(
+          bottom: BorderSide(color: SushiColors.divider, width: 1),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: GlassColors.redAccent.withAlpha(12),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
-          ),
-        ],
+        boxShadow: SushiShadow.card,
       ),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
@@ -103,14 +96,14 @@ class _AdminShellState extends State<AdminShell> {
           children: [
             if (canPop)
               Padding(
-                padding: const EdgeInsets.only(right: AppSpacing.sm),
+                padding: const EdgeInsets.only(right: SushiSpace.sm),
                 child: IconButton(
                   icon: const Icon(Icons.arrow_back, size: 20),
                   onPressed: () => Navigator.of(context).maybePop(),
                 ),
               ),
-            Text(widget.title, style: AppTypography.headline2),
-            const SizedBox(width: AppSpacing.lg),
+            Text(widget.title, style: SushiTypo.h2),
+            const SizedBox(width: SushiSpace.lg),
             ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 260),
               child: Align(
@@ -121,7 +114,7 @@ class _AdminShellState extends State<AdminShell> {
                     if (restaurants.isEmpty) {
                       return const Text(
                         'Aucun restaurant',
-                        style: AppTypography.caption,
+                        style: SushiTypo.caption,
                       );
                     }
                     final userRestId =
@@ -136,20 +129,19 @@ class _AdminShellState extends State<AdminShell> {
                         vertical: 8,
                       ),
                       decoration: BoxDecoration(
-                        color: GlassColors.glassWhite.withAlpha(180),
+                        color: SushiColors.surface,
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: GlassColors.sushi.withAlpha(120),
-                        ),
+                        border: Border.all(color: SushiColors.divider),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.store_mall_directory, size: 16),
+                          const Icon(Icons.store_mall_directory,
+                              size: 16, color: SushiColors.ink),
                           const SizedBox(width: 8),
                           Text(
                             restaurant.name,
-                            style: AppTypography.bodySmall,
+                            style: SushiTypo.bodySm,
                             overflow: TextOverflow.ellipsis,
                           ),
                         ],
@@ -159,30 +151,30 @@ class _AdminShellState extends State<AdminShell> {
                 ),
               ),
             ),
-            const SizedBox(width: AppSpacing.sm),
+            const SizedBox(width: SushiSpace.sm),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: GlassColors.glassWhite.withAlpha(170),
+                color: SushiColors.surface,
                 borderRadius: BorderRadius.circular(999),
-                border: Border.all(color: GlassColors.sushi.withAlpha(120)),
+                border: Border.all(color: SushiColors.divider),
               ),
               child: Row(
                 children: [
                   const Icon(
                     Icons.person_outline,
                     size: 16,
-                    color: GlassColors.glassText,
+                    color: SushiColors.ink,
                   ),
                   const SizedBox(width: 6),
                   Text(
                     auth.currentUser?.name ?? 'Admin',
-                    style: AppTypography.bodySmall,
+                    style: SushiTypo.bodySm,
                   ),
                 ],
               ),
             ),
-            const SizedBox(width: AppSpacing.sm),
+            const SizedBox(width: SushiSpace.sm),
             if (syncController.canManualSync) ...[
               Obx(
                 () => OutlinedButton.icon(
@@ -194,21 +186,28 @@ class _AdminShellState extends State<AdminShell> {
                         ? Icons.cloud_done
                         : Icons.cloud_off,
                     size: 16,
+                    color: SushiColors.ink,
                   ),
                   label: Text(
                     syncController.isSyncing ? 'Sync...' : 'Synchroniser',
+                    style: SushiTypo.bodySm,
                   ),
+                  style: SushiButtonStyle.secondary(),
                 ),
               ),
-              const SizedBox(width: AppSpacing.sm),
+              const SizedBox(width: SushiSpace.sm),
             ],
             TextButton.icon(
               onPressed: () async {
                 await auth.logout();
                 Get.offAllNamed('/login');
               },
-              icon: const Icon(Icons.logout, size: 16),
-              label: const Text('Déconnexion'),
+              icon: const Icon(Icons.logout, size: 16, color: SushiColors.red),
+              label: const Text('Déconnexion', style: SushiTypo.bodySm),
+              style: ButtonStyle(
+                foregroundColor:
+                    const WidgetStatePropertyAll(SushiColors.redDark),
+              ),
             ),
           ],
         ),
@@ -222,17 +221,11 @@ class _AdminShellState extends State<AdminShell> {
       duration: const Duration(milliseconds: 200),
       width: width,
       decoration: BoxDecoration(
-        color: GlassColors.glassWhite.withAlpha(220),
-        border: Border(
-          right: BorderSide(color: GlassColors.sushi.withAlpha(90), width: 1),
+        color: SushiColors.white,
+        border: const Border(
+          right: BorderSide(color: SushiColors.divider, width: 1),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: GlassColors.redAccent.withAlpha(10),
-            blurRadius: 12,
-            offset: const Offset(2, 0),
-          ),
-        ],
+        boxShadow: SushiShadow.card,
       ),
       child: Column(
         children: [
@@ -260,13 +253,13 @@ class _AdminShellState extends State<AdminShell> {
                     return const Icon(
                       Icons.point_of_sale,
                       size: 20,
-                      color: GlassColors.redAccent,
+                      color: SushiColors.red,
                     );
                   },
                 ),
                 if (!_collapsed) ...[
                   const SizedBox(width: 8),
-                  const Text('Caisse', style: AppTypography.headline2),
+                  const Text('Caisse', style: SushiTypo.h3),
                 ],
                 const Spacer(),
                 IconButton(
@@ -279,7 +272,7 @@ class _AdminShellState extends State<AdminShell> {
             ),
           ),
           const Divider(height: 1),
-          const SizedBox(height: AppSpacing.sm),
+          const SizedBox(height: SushiSpace.sm),
           _navItem(
             Icons.dashboard_outlined,
             'Tableau de bord',
@@ -314,14 +307,10 @@ class _AdminShellState extends State<AdminShell> {
         margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
-          color: isActive
-              ? AppColors.terraCotta.withValues(alpha: 0.08)
-              : Colors.transparent,
+          color: isActive ? SushiColors.redPale : SushiColors.white,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: isActive
-                ? AppColors.terraCotta.withValues(alpha: 0.2)
-                : Colors.transparent,
+            color: isActive ? SushiColors.red : SushiColors.divider,
           ),
         ),
         child: Row(
@@ -329,19 +318,15 @@ class _AdminShellState extends State<AdminShell> {
             Icon(
               icon,
               size: 20,
-              color: isActive ? AppColors.terraCotta : AppColors.grisModerne,
+              color: isActive ? SushiColors.red : SushiColors.inkMid,
             ),
             if (!_collapsed) ...[
               const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   label,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: isActive
-                        ? AppColors.terraCotta
-                        : AppColors.grisModerne,
-                    fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+                  style: SushiTypo.bodySm.copyWith(
+                    color: isActive ? SushiColors.red : SushiColors.inkMid,
                   ),
                 ),
               ),

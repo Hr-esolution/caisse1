@@ -24,6 +24,8 @@ Future<Uint8List> buildKitchenTicketPdf(
   final pageFormat = format ?? PdfPageFormat.roll80;
   final logoImage = await _loadLogoImage();
   final orderTime = _formatOrderTime(order.createdAt);
+  final payment = order.paymentMethod ?? '-';
+  final statusText = '${order.status} / ${order.paymentStatus}';
 
   doc.addPage(
     pw.Page(
@@ -50,6 +52,9 @@ Future<Uint8List> buildKitchenTicketPdf(
             pw.Text('Type: ${_fulfillmentLabel(order.fulfillmentType)}'),
             pw.Text('Table: ${order.tableNumber ?? '-'}'),
             pw.Text('Client: ${order.customerName ?? '-'}'),
+            pw.Text('Canal: ${order.channel}'),
+            pw.Text('Statut: $statusText'),
+            pw.Text('Paiement: $payment'),
             if (order.note != null && order.note!.trim().isNotEmpty)
               pw.Text('Note: ${order.note!.trim()}'),
             pw.Divider(),
@@ -97,6 +102,8 @@ Future<Uint8List> buildCustomerBillPdf(
       : order.totalPrice;
   final discount = order.discountAmount;
   final total = order.totalPrice;
+  final payment = order.paymentMethod ?? '-';
+  final statusText = '${order.status} / ${order.paymentStatus}';
 
   doc.addPage(
     pw.Page(
@@ -126,6 +133,9 @@ Future<Uint8List> buildCustomerBillPdf(
             pw.Text('Tel: ${order.customerPhone ?? '-'}'),
             if (order.deliveryAddress != null)
               pw.Text('Adresse: ${order.deliveryAddress}'),
+            pw.Text('Canal: ${order.channel}'),
+            pw.Text('Statut: $statusText'),
+            pw.Text('Paiement: $payment'),
             pw.Divider(),
             ...items.map(
               (it) => pw.Row(
@@ -185,6 +195,8 @@ Future<Uint8List> buildKitchenAndCustomerTicketsPdf(
       : order.totalPrice;
   final discount = order.discountAmount;
   final total = order.totalPrice;
+  final payment = order.paymentMethod ?? '-';
+  final statusText = '${order.status} / ${order.paymentStatus}';
 
   // Page 1: kitchen
   doc.addPage(
@@ -212,6 +224,9 @@ Future<Uint8List> buildKitchenAndCustomerTicketsPdf(
             pw.Text('Type: ${_fulfillmentLabel(order.fulfillmentType)}'),
             pw.Text('Table: ${order.tableNumber ?? '-'}'),
             pw.Text('Client: ${order.customerName ?? '-'}'),
+            pw.Text('Canal: ${order.channel}'),
+            pw.Text('Statut: $statusText'),
+            pw.Text('Paiement: $payment'),
             if (order.note != null && order.note!.trim().isNotEmpty)
               pw.Text('Note: ${order.note!.trim()}'),
             pw.Divider(),
@@ -262,6 +277,9 @@ Future<Uint8List> buildKitchenAndCustomerTicketsPdf(
             pw.Text('Type: ${_fulfillmentLabel(order.fulfillmentType)}'),
             pw.Text('Table: ${order.tableNumber ?? '-'}'),
             pw.Text('Client: ${order.customerName ?? '-'}'),
+            pw.Text('Canal: ${order.channel}'),
+            pw.Text('Statut: $statusText'),
+            pw.Text('Paiement: $payment'),
             pw.Divider(),
             ...items.map(
               (it) => pw.Row(
