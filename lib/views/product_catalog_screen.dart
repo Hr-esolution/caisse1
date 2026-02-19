@@ -21,6 +21,14 @@ class ProductCatalogScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Make sure required controllers are available (safeguard if bindings weren't run)
+    if (!Get.isRegistered<CategoryController>()) {
+      Get.put(CategoryController());
+    }
+    if (!Get.isRegistered<ProductController>()) {
+      Get.put(ProductController());
+    }
+
     return DefaultTabController(
       length: 2,
       child: AdminShell(
@@ -131,13 +139,22 @@ Widget _glassField({
   );
 }
 
-class CategoryListView extends StatelessWidget {
+class CategoryListView extends StatefulWidget {
   const CategoryListView({super.key});
 
   @override
+  State<CategoryListView> createState() => _CategoryListViewState();
+}
+
+class _CategoryListViewState extends State<CategoryListView>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
   Widget build(BuildContext context) {
+    super.build(context);
     return GetBuilder<CategoryController>(
-      init: CategoryController(),
       builder: (categoryController) {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -485,13 +502,22 @@ class CategoryListView extends StatelessWidget {
   }
 }
 
-class ProductListView extends StatelessWidget {
+class ProductListView extends StatefulWidget {
   const ProductListView({super.key});
 
   @override
+  State<ProductListView> createState() => _ProductListViewState();
+}
+
+class _ProductListViewState extends State<ProductListView>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
   Widget build(BuildContext context) {
+    super.build(context);
     return GetBuilder<ProductController>(
-      init: ProductController(),
       builder: (productController) {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -984,7 +1010,6 @@ class CategoryProductsScreen extends StatelessWidget {
           const SizedBox(height: AppSpacing.md),
           Expanded(
             child: GetBuilder<ProductController>(
-              init: ProductController(),
               builder: (productController) {
                 final products = productController.getProductsByCategory(
                   categoryId,

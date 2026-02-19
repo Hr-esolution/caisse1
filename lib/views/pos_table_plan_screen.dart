@@ -1,3 +1,5 @@
+// ignore_for_file: deprecated_member_use
+
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -112,7 +114,8 @@ class _PosTablePlanScreenState extends State<PosTablePlanScreen> {
                                 (entry) => _positionedTable(
                                   constraints: constraints,
                                   entry: entry,
-                                  isSelected: activeSelection ==
+                                  isSelected:
+                                      activeSelection ==
                                       normalizeTableName(entry.table.number),
                                   onTap: () => _onTableTap(pos, entry.table),
                                 ),
@@ -187,16 +190,12 @@ class _PosTablePlanScreenState extends State<PosTablePlanScreen> {
           children: [
             const Text('Plan des Tables', style: SushiTypo.h1),
             const SizedBox(height: SushiSpace.xs),
-            Text(
-              pos.restaurantLabel,
-              style: SushiTypo.bodyMd,
-            ),
+            Text(pos.restaurantLabel, style: SushiTypo.bodyMd),
             if (outOfPlanCount > 0) ...[
               const SizedBox(height: SushiSpace.xs),
               Text(
                 'Tables hors plan: $outOfPlanCount',
-                style:
-                    SushiTypo.caption.copyWith(color: SushiColors.inkMid),
+                style: SushiTypo.caption.copyWith(color: SushiColors.inkMid),
               ),
             ],
           ],
@@ -279,8 +278,9 @@ class _PosTablePlanScreenState extends State<PosTablePlanScreen> {
     final status = table.status;
     final isAvailable = status == 'available' || status == 'free';
     if (!isAvailable) {
-      final message =
-          status == 'reserved' ? 'Cette table est réservée' : 'Cette table est occupée';
+      final message = status == 'reserved'
+          ? 'Cette table est réservée'
+          : 'Cette table est occupée';
       final snackBar = SnackBar(
         content: Text(
           message,
@@ -330,10 +330,12 @@ class _TableTileState extends State<_TableTile> {
     final accent = widget.isSelected
         ? SushiColors.red
         : widget.isReserved
-            ? SushiColors.yellow
-            : widget.isFree
-                ? SushiColors.green
-                : SushiColors.inkMid;
+        ? SushiColors.yellow
+        : widget.isFree
+        ? SushiColors.green
+        : SushiColors.red;
+    final fill = accent.withOpacity(widget.isSelected ? 0.16 : 0.1);
+    final borderColor = widget.isSelected ? accent : accent.withOpacity(0.7);
 
     return MouseRegion(
       onEnter: (_) => setState(() => _hovered = true),
@@ -350,15 +352,27 @@ class _TableTileState extends State<_TableTile> {
             splashColor: SushiColors.redPale,
             onTap: widget.onTap,
             child: Container(
-              decoration: SushiDeco.card(selected: widget.isSelected),
+              decoration: SushiDeco.card(selected: widget.isSelected).copyWith(
+                color: fill,
+                border: Border.all(
+                  color: borderColor,
+                  width: widget.isSelected ? 2 : 1,
+                ),
+              ),
               alignment: Alignment.center,
               child: LayoutBuilder(
                 builder: (context, constraints) {
-                  final base = math.min(constraints.maxWidth, constraints.maxHeight);
+                  final base = math.min(
+                    constraints.maxWidth,
+                    constraints.maxHeight,
+                  );
                   final fontSize = (base * 0.38).clamp(14.0, 28.0).toDouble();
                   return Text(
                     widget.table.number,
-                    style: SushiTypo.h2.copyWith(color: accent, fontSize: fontSize),
+                    style: SushiTypo.h2.copyWith(
+                      color: accent,
+                      fontSize: fontSize,
+                    ),
                   );
                 },
               ),
@@ -393,7 +407,10 @@ class _LegendItem extends StatelessWidget {
             decoration: SushiDeco.badge(bg: color),
           ),
           const SizedBox(width: SushiSpace.xs),
-          Text(label, style: SushiTypo.caption.copyWith(color: SushiColors.ink)),
+          Text(
+            label,
+            style: SushiTypo.caption.copyWith(color: SushiColors.ink),
+          ),
         ],
       ),
     );

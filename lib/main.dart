@@ -209,38 +209,126 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       drawer: _buildDrawer(context),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(AppSpacing.xl),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppColors.blancPur,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.08),
-                    blurRadius: 20,
-                    offset: const Offset(0, 8),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.xl,
+            vertical: AppSpacing.lg,
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(AppSpacing.xl),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.blancPur,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.08),
+                      blurRadius: 20,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child:
+                    Icon(Icons.store, size: 80, color: AppColors.terraCotta),
+              ),
+              const SizedBox(height: AppSpacing.xl),
+              Text(
+                'Bienvenue au Système POS',
+                style: AppTypography.headline1,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppSpacing.md),
+              Text(
+                'Sélectionnez une option dans le menu',
+                style: AppTypography.bodyLarge,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: AppSpacing.xl),
+              Wrap(
+                spacing: AppSpacing.lg,
+                runSpacing: AppSpacing.lg,
+                alignment: WrapAlignment.center,
+                children: [
+                  _buildActionCard(
+                    icon: Icons.point_of_sale,
+                    title: 'Ouvrir le POS',
+                    description:
+                        "Accédez à l'interface de caisse sécurisée pour encaisser immédiatement.",
+                    buttonLabel: 'Accéder au POS',
+                    badgeColor: AppColors.terraCotta,
+                    onPressed: () => Get.toNamed('/pos'),
+                  ),
+                  _buildActionCard(
+                    icon: Icons.login,
+                    title: 'Connexion',
+                    description:
+                        "Revenir à l'écran de connexion pour changer d'utilisateur.",
+                    buttonLabel: 'Aller au login',
+                    badgeColor: AppColors.bleuGris,
+                    onPressed: () => Get.toNamed('/login'),
                   ),
                 ],
               ),
-              child: Icon(Icons.store, size: 80, color: AppColors.terraCotta),
-            ),
-            const SizedBox(height: AppSpacing.xl),
-            Text(
-              'Bienvenue au Système POS',
-              style: AppTypography.headline1,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: AppSpacing.md),
-            Text(
-              'Sélectionnez une option dans le menu',
-              style: AppTypography.bodyLarge,
-              textAlign: TextAlign.center,
-            ),
-          ],
+            ],
+          ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildActionCard({
+    required IconData icon,
+    required String title,
+    required String description,
+    required String buttonLabel,
+    required VoidCallback onPressed,
+    Color badgeColor = AppColors.terraCotta,
+  }) {
+    return Container(
+      width: 320,
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        color: AppColors.blancPur,
+        borderRadius: BorderRadius.circular(AppSpacing.xl),
+        border: Border.all(color: AppColors.grisLeger),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(AppSpacing.sm),
+            decoration: BoxDecoration(
+              color: badgeColor.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(AppSpacing.md),
+            ),
+            child: Icon(icon, color: badgeColor, size: 28),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Text(title, style: AppTypography.headline2),
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            description,
+            style: AppTypography.bodyLarge,
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: onPressed,
+              child: Text(buttonLabel),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -37,12 +37,24 @@ class _PosChoiceScreenState extends State<PosChoiceScreen> {
         title: const Text('Type de commande'),
         leading: const AppBackButton(),
         actions: [
-          TextButton(
+          TextButton.icon(
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.terraCotta,
+              backgroundColor: AppColors.livingCoral.withOpacity(0.14),
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.sm,
+                vertical: AppSpacing.xs,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
             onPressed: () {
               pos.lock();
               Get.offAllNamed('/pos');
             },
-            child: const Text('Verrouiller'),
+            icon: const Icon(Icons.lock_outline, size: 16),
+            label: const Text('Verrouiller'),
           ),
           const SizedBox(width: AppSpacing.sm),
         ],

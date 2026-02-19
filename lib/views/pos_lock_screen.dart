@@ -28,7 +28,11 @@ class _PosLockScreenState extends State<PosLockScreen> {
       backgroundColor: SushiColors.bg,
       appBar: AppBar(
         title: const Text('POS verrouillé', style: SushiTypo.h2),
-        leading: const AppBackButton(),
+        leading: AppBackButton(
+          alwaysVisible: true,
+          iconColor: SushiColors.red,
+          onPressed: () => Get.offAllNamed('/login'),
+        ),
         backgroundColor: SushiColors.white,
         foregroundColor: SushiColors.ink,
         elevation: 0,
@@ -65,7 +69,8 @@ class _PosLockScreenState extends State<PosLockScreen> {
                                   height: 60,
                                   alignment: Alignment.center,
                                   decoration: SushiDeco.badge(
-                                      bg: SushiColors.redSurface),
+                                    bg: SushiColors.redSurface,
+                                  ),
                                   child: const Icon(
                                     Icons.lock_outline,
                                     color: SushiColors.red,
@@ -146,10 +151,7 @@ class _PosLockScreenState extends State<PosLockScreen> {
                               color: SushiColors.red,
                             ),
                             SizedBox(height: SushiSpace.md),
-                            Text(
-                              'Pourquoi le POS ?',
-                              style: SushiTypo.h2,
-                            ),
+                            Text('Pourquoi le POS ?', style: SushiTypo.h2),
                             SizedBox(height: SushiSpace.sm),
                             Text(
                               'Le serveur gère ici toutes les commandes :\n'

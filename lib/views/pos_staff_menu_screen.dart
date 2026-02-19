@@ -20,7 +20,14 @@ class PosStaffMenuScreen extends StatelessWidget {
       return Scaffold(
         appBar: AppBar(
           title: const Text('Menu Serveur', style: SushiTypo.h2),
-          leading: const AppBackButton(),
+          leading: AppBackButton(
+            alwaysVisible: true,
+            iconColor: SushiColors.red,
+            onPressed: () {
+              pos.lock();
+              Get.offAllNamed('/pos');
+            },
+          ),
         ),
         body: const Center(child: CircularProgressIndicator()),
       );
@@ -29,14 +36,34 @@ class PosStaffMenuScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Menu Serveur', style: SushiTypo.h2),
-        leading: const AppBackButton(),
+        leading: AppBackButton(
+          alwaysVisible: true,
+          iconColor: SushiColors.red,
+          onPressed: () {
+            pos.lock();
+            Get.offAllNamed('/pos');
+          },
+        ),
         actions: [
-          TextButton(
+          TextButton.icon(
+            style: TextButton.styleFrom(
+              foregroundColor: SushiColors.red,
+              // ignore: deprecated_member_use
+              backgroundColor: SushiColors.redPale.withOpacity(0.6),
+              padding: const EdgeInsets.symmetric(
+                horizontal: SushiSpace.sm,
+                vertical: SushiSpace.xs,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
             onPressed: () {
               pos.lock();
               Get.offAllNamed('/pos');
             },
-            child: const Text('Verrouiller', style: SushiTypo.bodySm),
+            icon: const Icon(Icons.lock_outline, size: 16),
+            label: const Text('Verrouiller', style: SushiTypo.bodySm),
           ),
           const SizedBox(width: SushiSpace.sm),
         ],
@@ -57,8 +84,11 @@ class PosStaffMenuScreen extends StatelessWidget {
                   child: LayoutBuilder(
                     builder: (context, constraints) {
                       final width = constraints.maxWidth;
-                      final crossAxisCount =
-                          width < 900 ? 1 : width < 1200 ? 2 : 3;
+                      final crossAxisCount = width < 900
+                          ? 1
+                          : width < 1200
+                          ? 2
+                          : 3;
                       return GridView.count(
                         crossAxisCount: crossAxisCount,
                         crossAxisSpacing: SushiSpace.md,
@@ -126,10 +156,7 @@ class PosStaffMenuScreen extends StatelessWidget {
         spacing: SushiSpace.sm,
         runSpacing: SushiSpace.xs,
         children: [
-          _badge(
-            Icons.person_outline,
-            pos.activeStaff?.name ?? 'Serveur -',
-          ),
+          _badge(Icons.person_outline, pos.activeStaff?.name ?? 'Serveur -'),
           _badge(Icons.storefront_outlined, pos.restaurantLabel),
           _badge(
             Icons.today_outlined,
@@ -157,7 +184,6 @@ class PosStaffMenuScreen extends StatelessWidget {
       ),
     );
   }
-
 }
 
 class _MenuActionCard extends StatefulWidget {
@@ -227,7 +253,11 @@ class _MenuActionCardState extends State<_MenuActionCard> {
                     const SizedBox(height: SushiSpace.md),
                     Row(
                       children: [
-                        Icon(widget.emojiIcon, color: SushiColors.red, size: 18),
+                        Icon(
+                          widget.emojiIcon,
+                          color: SushiColors.red,
+                          size: 18,
+                        ),
                         const SizedBox(width: SushiSpace.sm),
                         Text(widget.emojiLabel, style: SushiTypo.bodySm),
                         const Spacer(),

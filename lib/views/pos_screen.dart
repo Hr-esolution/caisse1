@@ -104,38 +104,46 @@ class _ProductCardState extends State<_ProductCard> {
                     ),
                     const SizedBox(height: AppSpacing.xs),
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          AppSettingsService.instance.formatAmount(
-                            product.price,
-                          ),
-                          style: const TextStyle(
-                            color: AppColors.deepTeal,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w700,
+                        Expanded(
+                          child: Text(
+                            AppSettingsService.instance.formatAmount(
+                              product.price,
+                            ),
+                            style: const TextStyle(
+                              color: AppColors.deepTeal,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                            ),
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.sm,
-                            vertical: AppSpacing.xs,
-                          ),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(999),
-                            gradient: LinearGradient(
-                              colors: [
-                                AppColors.deepTeal.withAlpha(35),
-                                AppColors.livingCoral.withAlpha(35),
-                              ],
+                        const SizedBox(width: AppSpacing.xs),
+                        Flexible(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.sm,
+                              vertical: AppSpacing.xs,
                             ),
-                          ),
-                          child: const Text(
-                            'Disponible',
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.deepTeal,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(999),
+                              gradient: LinearGradient(
+                                colors: [
+                                  AppColors.deepTeal.withAlpha(35),
+                                  AppColors.livingCoral.withAlpha(35),
+                                ],
+                              ),
+                            ),
+                            child: const FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                'Disponible',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.deepTeal,
+                                ),
+                              ),
                             ),
                           ),
                         ),
@@ -446,13 +454,18 @@ class _PosScreenState extends State<PosScreen> {
                                     ),
                                     child: LayoutBuilder(
                                       builder: (context, constraints) {
-                                        const crossAxisCount = 5;
+                                        final width = constraints.maxWidth;
+                                        final crossAxisCount = math.max(
+                                          3,
+                                          math.min(8, (width / 180).floor()),
+                                        );
+                                        final aspectRatio = 0.92;
                                         return GridView.builder(
                                           itemCount: products.length,
                                           gridDelegate:
                                               SliverGridDelegateWithFixedCrossAxisCount(
                                                 crossAxisCount: crossAxisCount,
-                                                childAspectRatio: 1.1,
+                                                childAspectRatio: aspectRatio,
                                                 crossAxisSpacing: AppSpacing.md,
                                                 mainAxisSpacing: AppSpacing.md,
                                               ),
@@ -837,48 +850,41 @@ class _PosScreenState extends State<PosScreen> {
   }
 
   Widget _orderActions(PosController pos) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Wrap(
-        spacing: AppSpacing.xs,
-        runSpacing: AppSpacing.xs,
-        children: [
-          TextButton.icon(
-            onPressed: () => _selectFulfillment(pos),
-            icon: const Icon(Icons.local_dining_outlined, size: 16),
-            label: const Text('Type'),
-          ),
-          if (pos.fulfillmentType == 'on_site')
+    return Align(
+      alignment: Alignment.centerRight,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
             TextButton.icon(
-              onPressed: () => _promptTableNumber(pos),
-              icon: const Icon(Icons.table_restaurant_outlined, size: 16),
-              label: const Text('Table'),
+              onPressed: () => _selectFulfillment(pos),
+              icon: const Icon(Icons.local_dining_outlined, size: 16),
+              label: const Text('Type'),
             ),
-          TextButton.icon(
-            onPressed: () => _promptCustomerInfo(pos),
-            icon: const Icon(Icons.person_outline, size: 16),
-            label: const Text('Client'),
-          ),
-          TextButton.icon(
-            onPressed: () => _selectPaymentMethod(pos),
-            icon: const Icon(Icons.payments_outlined, size: 16),
-            label: const Text('Paiement'),
-          ),
-          TextButton.icon(
-            onPressed: () => _showOrdersDialog(pos),
-            icon: const Icon(Icons.receipt_long_outlined, size: 16),
-            label: const Text('Commandes'),
-          ),
-          TextButton.icon(
-            onPressed: () {
-              pos.lock();
-              Get.offAllNamed('/pos');
-            },
-            icon: const Icon(Icons.lock_outline, size: 16),
-            label: const Text('Verrouiller'),
-          ),
-        ],
+            if (pos.fulfillmentType == 'on_site') ...[
+              const SizedBox(width: AppSpacing.xs),
+              TextButton.icon(
+                onPressed: () => _promptTableNumber(pos),
+                icon: const Icon(Icons.table_restaurant_outlined, size: 16),
+                label: const Text('Table'),
+              ),
+            ],
+          ],
+        ),
       ),
+    );
+  }
+
+  ButtonStyle _lockButtonStyle() {
+    return TextButton.styleFrom(
+      foregroundColor: SushiColors.red,
+      backgroundColor: SushiColors.redPale.withOpacity(0.6),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.xs,
+      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
     );
   }
 
@@ -2041,7 +2047,7 @@ class _PosScreenState extends State<PosScreen> {
           },
           icon: const Icon(Icons.lock, size: 16, color: SushiColors.red),
           label: Text('Verrouiller', style: SushiTypo.h4),
-          style: SushiButtonStyle.secondary(),
+          style: _lockButtonStyle(),
         ),
       ],
     );
@@ -2462,22 +2468,40 @@ class _PosScreenState extends State<PosScreen> {
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: AppColors.grisLeger),
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Column(
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final isNarrow = constraints.maxWidth < 320;
+          if (isNarrow) {
+            return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(title, style: AppTypography.headline1),
                 const SizedBox(height: AppSpacing.xs),
                 Text(subTitle, style: AppTypography.caption),
+                const SizedBox(height: AppSpacing.sm),
+                Align(alignment: Alignment.centerLeft, child: action),
               ],
-            ),
-          ),
-          const SizedBox(width: AppSpacing.md),
-          Flexible(child: action),
-        ],
+            );
+          }
+
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title, style: AppTypography.headline1),
+                    const SizedBox(height: AppSpacing.xs),
+                    Text(subTitle, style: AppTypography.caption),
+                  ],
+                ),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Flexible(child: action),
+            ],
+          );
+        },
       ),
     );
   }
